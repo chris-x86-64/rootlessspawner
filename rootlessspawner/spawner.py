@@ -30,6 +30,22 @@ class RootlessSpawner(Spawner):
     proc = Instance(Popen, allow_none=True)
     pid = Integer(0)
 
+    def _notebook_dir_validate(self, value, trait):
+        # Strip any trailing slashes
+        # *except* if it's root
+        _, path = os.path.splitdrive(value)
+        if path == os.sep:
+            return value
+
+        value = value.rstrip(os.sep)
+
+        if not os.path.isabs(value):
+            # If we receive a non-absolute path, make it absolute.
+            value = os.path.abspath(value)
+        if not os.path.isdir(value):
+            os.mkdir(value, mode=0o755)
+        return value
+
     def load_state(self, state):
         """load pid from state"""
         super(RootlessSpawner, self).load_state(state)
