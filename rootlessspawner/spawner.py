@@ -4,12 +4,16 @@ without involving root, sudo, or local system accounts. """
 # Copyright (c) Christopher H Smith <chris@binc.jp>
 # Distributed under the terms of the Modified BSD License.
 
+import os
+import errno
+import signal
 import pipes
 import shutil
 from tornado import gen
 from subprocess import Popen
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
+from traitlets import (Integer, Instance)
 
 class RootlessSpawner(Spawner):
 
@@ -28,20 +32,20 @@ class RootlessSpawner(Spawner):
 
     def load_state(self, state):
         """load pid from state"""
-        super(LocalProcessSpawner, self).load_state(state)
+        super(RootlessSpawner, self).load_state(state)
         if 'pid' in state:
             self.pid = state['pid']
 
     def get_state(self):
         """add pid to state"""
-        state = super(LocalProcessSpawner, self).get_state()
+        state = super(RootlessSpawner, self).get_state()
         if self.pid:
             state['pid'] = self.pid
         return state
 
     def clear_state(self):
         """clear pid state"""
-        super(LocalProcessSpawner, self).clear_state()
+        super(RootlessSpawner, self).clear_state()
         self.pid = 0
 
     def get_env(self):
