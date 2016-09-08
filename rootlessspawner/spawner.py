@@ -13,7 +13,7 @@ from tornado import gen
 from subprocess import Popen
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
-from traitlets import (Integer, Instance)
+from traitlets import (Unicode, Integer, Instance)
 
 class RootlessSpawner(Spawner):
 
@@ -26,6 +26,11 @@ class RootlessSpawner(Spawner):
     KILL_TIMEOUT = Integer(5,
         help="Seconds to wait for process to halt after SIGKILL before giving up"
     ).tag(config=True)
+
+    shared_dir = Unicode(
+        config=True,
+        help="The path to a directory shared by all users"
+    )
 
     proc = Instance(Popen, allow_none=True)
     pid = Integer(0)
@@ -44,6 +49,11 @@ class RootlessSpawner(Spawner):
             value = os.path.abspath(value)
         if not os.path.isdir(value):
             os.mkdir(value, mode=0o755)
+
+        if self.shared_dir and not os.path.islink(value + '/Shared'):
+            # Create a symlink to the shared directory
+            os.symlink(self.shared_dir, value + '/Shared')
+
         return value
 
     def load_state(self, state):
