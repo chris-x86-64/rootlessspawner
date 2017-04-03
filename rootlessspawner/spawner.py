@@ -13,7 +13,7 @@ from tornado import gen
 from subprocess import Popen
 from jupyterhub.spawner import Spawner
 from jupyterhub.utils import random_port
-from traitlets import (Unicode, Integer, Instance)
+from traitlets import (Unicode, Integer, Instance, validate)
 
 class RootlessSpawner(Spawner):
 
@@ -35,7 +35,9 @@ class RootlessSpawner(Spawner):
     proc = Instance(Popen, allow_none=True)
     pid = Integer(0)
 
-    def _notebook_dir_validate(self, value, trait):
+    @validate('notebook_dir')
+    def _notebook_dir_validate(self, p):
+        value = p['value']
         # Strip any trailing slashes
         # *except* if it's root
         _, path = os.path.splitdrive(value)
