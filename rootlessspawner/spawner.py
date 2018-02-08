@@ -37,7 +37,7 @@ class RootlessSpawner(Spawner):
 
     @validate('notebook_dir')
     def _notebook_dir_validate(self, p):
-        value = p['value']
+        value = self.format_string(p['value'])
         # Strip any trailing slashes
         # *except* if it's root
         _, path = os.path.splitdrive(value)
